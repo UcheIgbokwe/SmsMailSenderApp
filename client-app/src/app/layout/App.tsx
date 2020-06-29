@@ -1,34 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Header, Icon, List } from 'semantic-ui-react'
+import React, { useState, Fragment } from 'react';
+import { List, Container } from 'semantic-ui-react'
 import { IToken } from '../../models/login';
-import axios from 'axios';
+import NavBar from '../../features/nav/NavBar';
+import UploadDashboard from '../../features/upload/dashboard/UploadDashboard'
 
 const App = () => {
 
-  const [token, setToken] = useState<IToken>()
+  const [token] = useState<IToken>()
   
 
-  useEffect(() => {
-    const requestData = {email: 'uchechukwu.igbokwe',pinAndToken:'1234'};
-    
-    axios
-    .post<IToken>('https://localhost:44398/api/AuthenticateUser',requestData)
-    .then(response => {
-      setToken(response.data)
-    });
-  },[]);
+  
 
   return (
-    <div>
-      <Header as='h2'>
-        <Icon name='shipping fast' />
-        <Header.Content>SmsMailSenderApp</Header.Content>
-      </Header>
-
+    <Fragment>
+      <NavBar/>
+      <Container style={{marginTop: '10em'}}>
+      <UploadDashboard/>
+      </Container>
       <List>
         <List.Item>{token?.token}</List.Item>
       </List>
-    </div>
+    </Fragment>
   );
 }
 
