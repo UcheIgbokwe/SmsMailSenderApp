@@ -2,7 +2,8 @@ export interface IUpload {
     file: string;
 };
 
+
 export interface ZibSmsAgentSending {
-    SenderAddress: string;
+    SrcAddress: string;
     Message: string;
 };             

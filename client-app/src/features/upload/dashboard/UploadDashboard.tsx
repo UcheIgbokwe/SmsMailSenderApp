@@ -7,49 +7,78 @@ import Swal from "sweetalert2";
 const UploadDashboard = () => {
 
     const [uploadFile, setUploadFile] = useState<IUpload>();
-    const [responseDescription, setResponse] = useState({});
+    //const [responseDetails, setResponse] = useState({});
     const [filename, setFileName] = useState('Choose File');
    
+    
 
-    const submit = async (e:any) => {
+    const submit = (e:any) => {
         e.preventDefault();
 
-        if (uploadFile !== undefined) {
-            const url = 'https://localhost:44398/api/UploadFile';
-            const formData = new FormData();
-            formData.append('file', uploadFile.file);
-            const config = {
-                headers: {
-                    'content-type': 'multipart/form-data',
-                },
-            };
+        setUploadFile(uploadFile);
 
-            try {
-                await axios
+        if (apiData.SrcAddress !== '' && apiData.Message !== '') {
+
+            if (uploadFile !== undefined) {
+                const url = 'https://localhost:44398/api/UploadFile';
+                const formData = new FormData();
+                formData.append('file', uploadFile.file);
+                formData.append("SrcAddress", apiData.SrcAddress);
+                formData.append("Message", apiData.Message);
+
+                const config = {
+                    headers: {
+                        'content-type': 'multipart/form-data',
+                    },
+                };
+    
+                
+                try {
+                    axios
                     .post(url,formData,config)
                     .then((response) => {
                         const {responseDescription, responseCode} = response.data;
-                        setResponse({responseDescription, responseCode});
-                        console.log(responseCode);
+                        //setResponse({responseDescription, responseCode});
+                        console.log(responseDescription);
                         if (responseCode === '00') {
                             
                             Swal.fire(
-                                 'Success',
-                                 responseDescription,
-                                 'success',
+                                'Success',
+                                responseDescription,
+                                'success',
                             );
+                            
+                            setUploadFile({file : ''});
+                            setFileName('Choose File');
+                            setapiData(initialiseForm)
                         }             
                     })
-
-                //console.log(responseDescription);
-
-            } catch (error) {
-                console.log(error)
+    
+    
+                } catch (error) {
+                    console.log(error)
+                    Swal.fire(
+                        'Warning',
+                        error,
+                        'warning',
+                    );
+                }
+                
+                
+            }else{
+    
+                Swal.fire(
+                    'Warning',
+                    'Please upload a file!',
+                    'warning',
+                );
             }
-            
-            
         }else{
-            console.log('file is undefined')
+            Swal.fire(
+                'Warning',
+                'Please fill the form!',
+                'warning',
+            );
         }
     };
 
@@ -62,18 +91,17 @@ const UploadDashboard = () => {
 
     const initialiseForm = () => {
         return {
-            SenderAddress: '',
+            SrcAddress: '',
             Message: ''
         }
     }
 
-    const [formData, setFormData] = useState<ZibSmsAgentSending>(initialiseForm);
+    const [apiData, setapiData] = useState<ZibSmsAgentSending>(initialiseForm);
 
     //assign details of the form to a state
     const handleInputChange = (e:any) => {
         const {name, value} = e.target;
-        setFormData({ ...formData, [name]: value});
-        console.log(formData);
+        setapiData({ ...apiData, [name]: value});
     }
 
     return (
@@ -84,8 +112,8 @@ const UploadDashboard = () => {
             <div className='container row justify-content-md-center'>
                 <div className='col-lg-4'>
                     <Form>
-                        <Form.Input onChange={handleInputChange} name='SenderAddress' placeholder='SenderAddress' value={formData.SenderAddress}/>
-                        <Form.TextArea rows={3} onChange={handleInputChange} name='Message' placeholder='Message' value={formData.Message}/>
+                        <Form.Input onChange={handleInputChange} name='SrcAddress' placeholder='SenderAddress' value={apiData.SrcAddress}/>
+                        <Form.TextArea rows={3} onChange={handleInputChange} name='Message' placeholder='Message' value={apiData.Message}/>
                     </Form>
                 </div>
             </div>
