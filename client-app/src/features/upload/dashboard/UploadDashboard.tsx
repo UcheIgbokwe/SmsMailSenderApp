@@ -1,16 +1,21 @@
-import React, { useState, Fragment } from 'react'
+import React, { useState, Fragment, FormEvent, useEffect } from 'react'
 import { IUpload, ZibSmsAgentSending } from '../../../models/uploadModel'
-import axios from 'axios';
 import { Form, Icon } from 'semantic-ui-react';
 import Swal from "sweetalert2"; 
+import agent from '../../../app/api/agent';
+import LoadingComponent from '../../../app/layout/LoadingComponent'
 
 const UploadDashboard = () => {
 
-    const [uploadFile, setUploadFile] = useState<IUpload>();
-    //const [responseDetails, setResponse] = useState({});
-    const [filename, setFileName] = useState('Choose File');
-   
     
+    const [uploadFile, setUploadFile] = useState<IUpload>();
+    const [filename, setFileName] = useState('Choose File');
+    const [loading, setLoading] = useState(true);
+    
+
+    const [addFormData, setFormData] = useState<FormData>();
+    const [addconfig, setConfig] = useState({});
+   
 
     const submit = (e:any) => {
         e.preventDefault();
@@ -20,7 +25,7 @@ const UploadDashboard = () => {
         if (apiData.SrcAddress !== '' && apiData.Message !== '') {
 
             if (uploadFile !== undefined) {
-                const url = 'https://localhost:44398/api/UploadFile';
+
                 const formData = new FormData();
                 formData.append('file', uploadFile.file);
                 formData.append("SrcAddress", apiData.SrcAddress);
@@ -31,39 +36,9 @@ const UploadDashboard = () => {
                         'content-type': 'multipart/form-data',
                     },
                 };
-    
-                
-                try {
-                    axios
-                    .post(url,formData,config)
-                    .then((response) => {
-                        const {responseDescription, responseCode} = response.data;
-                        //setResponse({responseDescription, responseCode});
-                        console.log(responseDescription);
-                        if (responseCode === '00') {
-                            
-                            Swal.fire(
-                                'Success',
-                                responseDescription,
-                                'success',
-                            );
-                            
-                            setUploadFile({file : ''});
-                            setFileName('Choose File');
-                            setapiData(initialiseForm)
-                        }             
-                    })
-    
-    
-                } catch (error) {
-                    console.log(error)
-                    Swal.fire(
-                        'Warning',
-                        error,
-                        'warning',
-                    );
-                }
-                
+
+                setFormData(formData);
+                setConfig(config);
                 
             }else{
     
@@ -99,10 +74,48 @@ const UploadDashboard = () => {
     const [apiData, setapiData] = useState<ZibSmsAgentSending>(initialiseForm);
 
     //assign details of the form to a state
-    const handleInputChange = (e:any) => {
-        const {name, value} = e.target;
+    const handleInputChange = (e: FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const {name, value} = e.currentTarget;
         setapiData({ ...apiData, [name]: value});
     }
+
+    useEffect(() => {
+        
+        setLoading(false)
+
+        if (addFormData !== undefined) {
+            try {
+                agent.SmsResponse.upload(addFormData!, addconfig)
+                .then((response) => {
+                    const {responseDescription, responseCode} = response.data;
+                    if (responseCode === '00') {
+                        
+                        Swal.fire(
+                            'Success',
+                            responseDescription,
+                            'success',
+                        );
+                        
+                        setUploadFile({file : ''});
+                        setFileName('Choose File');
+                        setapiData(initialiseForm)
+                    }             
+                }).then(() => setLoading(false));
+    
+    
+            } catch (error) {
+                console.log(error)
+                Swal.fire(
+                    'Warning',
+                    error,
+                    'warning',
+                );
+            }   
+        }
+        
+    }, [addFormData, addconfig])
+
+    if (loading) return <LoadingComponent content='Loading file...'/>
 
     return (
         <Fragment>
