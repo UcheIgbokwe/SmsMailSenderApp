@@ -1,21 +1,21 @@
-import React, { useState, Fragment, FormEvent, useEffect } from 'react'
+import React, { useState, Fragment, FormEvent, useEffect, useContext } from 'react'
 import { IUpload, ZibSmsAgentSending } from '../../../models/uploadModel'
 import { Form, Icon } from 'semantic-ui-react';
 import Swal from "sweetalert2"; 
-import agent from '../../../app/api/agent';
 import LoadingComponent from '../../../app/layout/LoadingComponent'
+import SmsStore from '../../../app/stores/smsStore';
+import {observer} from 'mobx-react-lite';
+
 
 const UploadDashboard = () => {
 
     
     const [uploadFile, setUploadFile] = useState<IUpload>();
     const [filename, setFileName] = useState('Choose File');
-    const [loading, setLoading] = useState(true);
-    
 
     const [addFormData, setFormData] = useState<FormData>();
     const [addconfig, setConfig] = useState({});
-   
+    const smsStore = useContext(SmsStore);
 
     const submit = (e:any) => {
         e.preventDefault();
@@ -80,31 +80,15 @@ const UploadDashboard = () => {
     }
 
     useEffect(() => {
-        
-        setLoading(false)
 
         if (addFormData !== undefined) {
             try {
-                agent.SmsResponse.upload(addFormData!, addconfig)
-                .then((response) => {
-                    const {responseDescription, responseCode} = response.data;
-                    if (responseCode === '00') {
-                        
-                        Swal.fire(
-                            'Success',
-                            responseDescription,
-                            'success',
-                        );
-                        
-                        setUploadFile({file : ''});
-                        setFileName('Choose File');
-                        setapiData(initialiseForm)
-                    }             
-                }).then(() => setLoading(false));
-    
-    
+                smsStore.uploadSmsData(addFormData!, addconfig);
+                setUploadFile({file : ''});
+                setFileName('Choose File');
+                setapiData(initialiseForm)
+
             } catch (error) {
-                console.log(error)
                 Swal.fire(
                     'Warning',
                     error,
@@ -113,9 +97,11 @@ const UploadDashboard = () => {
             }   
         }
         
-    }, [addFormData, addconfig])
+    },[addFormData,smsStore,addconfig])
 
-    if (loading) return <LoadingComponent content='Loading file...'/>
+    
+
+    if (smsStore.loadingInitial) return <LoadingComponent content='Loading file...'/>
 
     return (
         <Fragment>
@@ -147,4 +133,4 @@ const UploadDashboard = () => {
     )
 }
 
-export default UploadDashboard
+export default observer(UploadDashboard)
