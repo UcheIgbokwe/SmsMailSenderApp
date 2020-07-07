@@ -10,3 +10,8 @@ body {
     rgb(119, 119, 119) 89%
   ) !important;
 }
+
+.ui.card,
+.ui.cards>.card {
+  background-color: #a3a3a3;
+}

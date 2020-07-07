@@ -1,6 +1,6 @@
-import React, { useState, Fragment, FormEvent, useEffect, useContext } from 'react'
+import React, { useState, FormEvent, useEffect, useContext } from 'react'
 import { IUpload, ZibSmsAgentSending } from '../../../models/uploadModel'
-import { Form, Icon } from 'semantic-ui-react';
+import { Form, Icon, Card, Input, TextArea } from 'semantic-ui-react';
 import Swal from "sweetalert2"; 
 import LoadingComponent from '../../../app/layout/LoadingComponent'
 import SmsStore from '../../../app/stores/smsStore';
@@ -11,7 +11,6 @@ const UploadDashboard = () => {
 
     
     const [uploadFile, setUploadFile] = useState<IUpload>();
-    const [filename, setFileName] = useState('Choose File');
 
     const [addFormData, setFormData] = useState<FormData>();
     const [addconfig, setConfig] = useState({});
@@ -61,7 +60,6 @@ const UploadDashboard = () => {
     const onSetFile = (e:any) => {
         
         setUploadFile({file : e.target.files[0]});
-        setFileName( e.target.files[0].name);
     }
 
     const initialiseForm = () => {
@@ -85,7 +83,6 @@ const UploadDashboard = () => {
             try {
                 smsStore.uploadSmsData(addFormData!, addconfig);
                 setUploadFile({file : ''});
-                setFileName('Choose File');
                 setapiData(initialiseForm)
 
             } catch (error) {
@@ -104,32 +101,37 @@ const UploadDashboard = () => {
     if (smsStore.loadingInitial) return <LoadingComponent content='Loading file...'/>
 
     return (
-        <Fragment>
-            <div className='container row justify-content-md-center'>
-                <h4><Icon fitted name='shipping fast' /> Sms Upload</h4>
-            </div>
-            <div className='container row justify-content-md-center'>
-                <div className='col-lg-4'>
-                    <Form>
-                        <Form.Input onChange={handleInputChange} name='SrcAddress' placeholder='SenderAddress' value={apiData.SrcAddress}/>
-                        <Form.TextArea rows={3} onChange={handleInputChange} name='Message' placeholder='Message' value={apiData.Message}/>
-                    </Form>
+        <Card centered raised>
+            <Card.Content header >
+                <div className='container row justify-content-md-center' >
+                    <Icon name='shipping fast' />Sms Upload
                 </div>
-            </div>
-            <br></br>
-            <form onSubmit={submit}>
-                
-                <div className='container row justify-content-md-center'>
-                <div className='col-md-4'>
-                    <input type='file' className='custom-file-input' id='customFile' onChange={onSetFile}/>
-                    <label className='custom-file-label' htmlFor='customFile'>
-                        {filename}
-                    </label>
-                </div>
-                    <input type="submit" value='Upload' className='btn btn-primary ' /> 
-                </div>
-            </form>
-        </Fragment>
+            </Card.Content>
+            <Card.Content>
+            <Form onSubmit={submit}>
+                <Form.Group>
+                    <Form.Field width={14} >
+                        <Input icon='at' iconPosition='left' onChange={handleInputChange} name='SrcAddress' placeholder='SenderAddress' value={apiData.SrcAddress} />
+                    </Form.Field>
+                </Form.Group>
+                <Form.Group>
+                    <Form.Field width={15} >
+                        <TextArea rows={2}  onChange={handleInputChange} name='Message' placeholder='Message' value={apiData.Message}/>
+                    </Form.Field>
+                </Form.Group>
+                <Form.Group>
+                    <Form.Field width={16} >
+                        <Input type='file'  name='custom-file-input' onChange={onSetFile}/>
+                        
+                    </Form.Field>
+                </Form.Group>
+                <input type="submit" value='Upload' className='btn btn-primary ' /> 
+            </Form>
+            </Card.Content>
+            <Card.Content extra>
+            <Icon name='warning' />File format must be in .xlsx
+            </Card.Content>
+        </Card>
     )
 }
 
